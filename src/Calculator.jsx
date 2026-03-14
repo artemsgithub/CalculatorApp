@@ -15,11 +15,11 @@ function Calculator() {
 
   const updateDisplay = useCallback((val) => {
     let str = String(val)
-    if (str.length > 9) {
+    if (str.length > 10) {
       let num = parseFloat(val)
-      str = num.toExponential(3)
-      if (str.length > 9) {
-        setDisplayValue('E')
+      str = num.toExponential(4)
+      if (str.length > 10) {
+        setDisplayValue('Error')
         setDisplayError(true)
         setTimeout(() => setDisplayError(false), 1000)
         return
@@ -29,7 +29,7 @@ function Calculator() {
   }, [])
 
   const flashError = useCallback(() => {
-    setDisplayValue('E')
+    setDisplayValue('Error')
     setDisplayError(true)
     setTimeout(() => setDisplayError(false), 1000)
   }, [])
@@ -63,7 +63,7 @@ function Calculator() {
       return
     }
 
-    result = parseFloat(result.toPrecision(8))
+    result = parseFloat(result.toPrecision(10))
     const resultStr = String(result)
     s.currentValue = resultStr
     s.previousValue = result
@@ -79,7 +79,7 @@ function Calculator() {
         s.currentValue = key
         s.shouldResetDisplay = false
       } else {
-        if (s.currentValue.replace('.', '').replace('-', '').length >= 8) return
+        if (s.currentValue.replace('.', '').replace('-', '').length >= 10) return
         s.currentValue += key
       }
       updateDisplay(s.currentValue)
@@ -97,19 +97,32 @@ function Calculator() {
       return
     }
 
-    if (key === 'CE') {
-      s.currentValue = '0'
-      s.shouldResetDisplay = false
-      updateDisplay('0')
+    if (key === '←') {
+      if (s.shouldResetDisplay || s.currentValue === '0') return
+      if (s.currentValue.length === 1 || (s.currentValue.length === 2 && s.currentValue[0] === '-')) {
+        s.currentValue = '0'
+      } else {
+        s.currentValue = s.currentValue.slice(0, -1)
+      }
+      updateDisplay(s.currentValue)
       return
     }
 
-    if (key === 'C') {
+    if (key === 'AC') {
       s.currentValue = '0'
       s.previousValue = null
       s.operator = null
       s.shouldResetDisplay = false
       updateDisplay('0')
+      return
+    }
+
+    if (key === '%') {
+      const val = parseFloat(s.currentValue)
+      const result = val / 100
+      s.currentValue = String(result)
+      s.shouldResetDisplay = true
+      updateDisplay(s.currentValue)
       return
     }
 
@@ -151,7 +164,7 @@ function Calculator() {
       '5': '5', '6': '6', '7': '7', '8': '8', '9': '9',
       '.': '.', 'Enter': '=', '=': '=',
       '+': '+', '-': '−', '*': '×', '/': '÷',
-      'Escape': 'C', 'Delete': 'CE', 'Backspace': 'CE',
+      'Escape': 'AC', 'Backspace': '←', '%': '%',
     }
     const handler = (e) => {
       if (keyMap[e.key]) {
@@ -168,127 +181,116 @@ function Calculator() {
   const isPressed = (keyId) => pressedKeyRef.current === keyId
 
   return (
-    <div className="scene">
-      <div className="table-reflection" />
-      <div className="calculator">
-        {/* Display Section */}
-        <div className="display-housing">
-          <div className="brand-row">
-            <div className="ti-logo">
-              <span className="ti-star">★</span>
-              <span className="brand-name">Texas Instruments</span>
-            </div>
-            <span className="model-badge">Datamath</span>
-          </div>
-          <div className="display-window">
-            <div className="scanline" />
-            <div className="display-ghost">88888888.</div>
-            <div className={`display-text${displayError ? ' error' : ''}`}>
-              {displayValue}
-            </div>
+    <div className="calculator">
+      {/* Display Section */}
+      <div className="display-section">
+        <div className="display-window">
+          <div className="scanline" />
+          <div className="display-ghost">8888888888.</div>
+          <div className={`display-text${displayError ? ' error' : ''}`}>
+            {displayValue}
           </div>
         </div>
+      </div>
 
-        {/* Keypad Panel */}
-        <div className="keypad-panel">
-          {/* Function row: CE, ÷, ×, C */}
-          <div className="fn-row">
-            <button
-              className={`key key-fn${isPressed('key-CE') ? ' pressed' : ''}`}
-              onPointerDown={() => handlePress('CE', 'key-CE')}
-            >
-              CE
-            </button>
-            <button
-              className={`key key-white key-op${isPressed('key-÷') ? ' pressed' : ''}`}
-              onPointerDown={() => handlePress('÷', 'key-÷')}
-            >
-              ÷
-            </button>
-            <button
-              className={`key key-white key-op${isPressed('key-×') ? ' pressed' : ''}`}
-              onPointerDown={() => handlePress('×', 'key-×')}
-            >
-              ×
-            </button>
-            <button
-              className={`key key-fn${isPressed('key-C') ? ' pressed' : ''}`}
-              onPointerDown={() => handlePress('C', 'key-C')}
-            >
-              C
-            </button>
-          </div>
+      {/* Keypad */}
+      <div className="keypad">
+        {/* Row 1: ← AC % ÷ */}
+        <button
+          className={`key key-fn${isPressed('key-←') ? ' pressed' : ''}`}
+          onPointerDown={() => handlePress('←', 'key-←')}
+        >
+          ←
+        </button>
+        <button
+          className={`key key-fn${isPressed('key-AC') ? ' pressed' : ''}`}
+          onPointerDown={() => handlePress('AC', 'key-AC')}
+        >
+          C/AC
+        </button>
+        <button
+          className={`key key-fn${isPressed('key-%') ? ' pressed' : ''}`}
+          onPointerDown={() => handlePress('%', 'key-%')}
+        >
+          %
+        </button>
+        <button
+          className={`key key-operator${isPressed('key-÷') ? ' pressed' : ''}`}
+          onPointerDown={() => handlePress('÷', 'key-÷')}
+        >
+          ÷
+        </button>
 
-          <div className="row-divider" />
+        {/* Row 2: 7 8 9 × */}
+        {['7', '8', '9'].map(n => (
+          <button
+            key={n}
+            className={`key key-digit${isPressed(`key-${n}`) ? ' pressed' : ''}`}
+            onPointerDown={() => handlePress(n, `key-${n}`)}
+          >
+            {n}
+          </button>
+        ))}
+        <button
+          className={`key key-operator${isPressed('key-×') ? ' pressed' : ''}`}
+          onPointerDown={() => handlePress('×', 'key-×')}
+        >
+          ×
+        </button>
 
-          {/* Main grid */}
-          <div className="num-grid">
-            {/* Row 1 */}
-            {['7', '8', '9'].map(n => (
-              <button
-                key={n}
-                className={`key key-white${isPressed(`key-${n}`) ? ' pressed' : ''}`}
-                onPointerDown={() => handlePress(n, `key-${n}`)}
-              >
-                {n}
-              </button>
-            ))}
-            <button
-              className={`key key-white key-minus${isPressed('key-−') ? ' pressed' : ''}`}
-              onPointerDown={() => handlePress('−', 'key-−')}
-            >
-              −
-            </button>
+        {/* Row 3: 4 5 6 − */}
+        {['4', '5', '6'].map(n => (
+          <button
+            key={n}
+            className={`key key-digit${isPressed(`key-${n}`) ? ' pressed' : ''}`}
+            onPointerDown={() => handlePress(n, `key-${n}`)}
+          >
+            {n}
+          </button>
+        ))}
+        <button
+          className={`key key-operator${isPressed('key-−') ? ' pressed' : ''}`}
+          onPointerDown={() => handlePress('−', 'key-−')}
+        >
+          −
+        </button>
 
-            {/* Row 2 */}
-            {['4', '5', '6'].map(n => (
-              <button
-                key={n}
-                className={`key key-white${isPressed(`key-${n}`) ? ' pressed' : ''}`}
-                onPointerDown={() => handlePress(n, `key-${n}`)}
-              >
-                {n}
-              </button>
-            ))}
-            <button
-              className={`key key-white${isPressed('key-+') ? ' pressed' : ''}`}
-              onPointerDown={() => handlePress('+', 'key-+')}
-            >
-              +
-            </button>
+        {/* Row 4: 1 2 3 + */}
+        {['1', '2', '3'].map(n => (
+          <button
+            key={n}
+            className={`key key-digit${isPressed(`key-${n}`) ? ' pressed' : ''}`}
+            onPointerDown={() => handlePress(n, `key-${n}`)}
+          >
+            {n}
+          </button>
+        ))}
+        <button
+          className={`key key-operator${isPressed('key-+') ? ' pressed' : ''}`}
+          onPointerDown={() => handlePress('+', 'key-+')}
+        >
+          +
+        </button>
 
-            {/* Row 3 */}
-            {['1', '2', '3'].map(n => (
-              <button
-                key={n}
-                className={`key key-white${isPressed(`key-${n}`) ? ' pressed' : ''}`}
-                onPointerDown={() => handlePress(n, `key-${n}`)}
-              >
-                {n}
-              </button>
-            ))}
-            <button
-              className={`key key-orange key-equals${isPressed('key-=') ? ' pressed' : ''}`}
-              onPointerDown={() => handlePress('=', 'key-=')}
-            >
-              =
-            </button>
-
-            {/* Row 4 */}
-            <button
-              className={`key key-white key-zero${isPressed('key-0') ? ' pressed' : ''}`}
-              onPointerDown={() => handlePress('0', 'key-0')}
-            >
-              0
-            </button>
-            <button
-              className={`key key-white${isPressed('key-.') ? ' pressed' : ''}`}
-              onPointerDown={() => handlePress('.', 'key-.')}
-            >
-              .
-            </button>
-          </div>
-        </div>
+        {/* Row 5: 0 (span 2) . = */}
+        <button
+          className={`key key-digit key-zero${isPressed('key-0') ? ' pressed' : ''}`}
+          onPointerDown={() => handlePress('0', 'key-0')}
+        >
+          0
+        </button>
+        <button
+          className={`key key-digit${isPressed('key-.') ? ' pressed' : ''}`}
+          onPointerDown={() => handlePress('.', 'key-.')}
+        >
+          .
+        </button>
+        <button
+          className={`key key-equals${isPressed('key-=') ? ' pressed' : ''}`}
+          onPointerDown={() => handlePress('=', 'key-=')}
+        >
+          =
+        </button>
       </div>
     </div>
   )
