@@ -195,7 +195,7 @@ function Calculator() {
 
       {/* Keypad */}
       <div className="keypad">
-        {/* Row 1: ← AC % ÷ */}
+        {/* Row 1: ← AC % --- (menu) */}
         <button
           className={`key key-fn${isPressed('key-←') ? ' pressed' : ''}`}
           onPointerDown={() => handlePress('←', 'key-←')}
@@ -215,14 +215,31 @@ function Calculator() {
           %
         </button>
         <button
+          className="key key-menu"
+          disabled
+        >
+          ―――
+        </button>
+
+        {/* Row 2: 7 8 9 ÷ */}
+        {['7', '8', '9'].map(n => (
+          <button
+            key={n}
+            className={`key key-digit${isPressed(`key-${n}`) ? ' pressed' : ''}`}
+            onPointerDown={() => handlePress(n, `key-${n}`)}
+          >
+            {n}
+          </button>
+        ))}
+        <button
           className={`key key-operator${isPressed('key-÷') ? ' pressed' : ''}`}
           onPointerDown={() => handlePress('÷', 'key-÷')}
         >
           ÷
         </button>
 
-        {/* Row 2: 7 8 9 × */}
-        {['7', '8', '9'].map(n => (
+        {/* Row 3: 4 5 6 × */}
+        {['4', '5', '6'].map(n => (
           <button
             key={n}
             className={`key key-digit${isPressed(`key-${n}`) ? ' pressed' : ''}`}
@@ -238,8 +255,8 @@ function Calculator() {
           ×
         </button>
 
-        {/* Row 3: 4 5 6 − */}
-        {['4', '5', '6'].map(n => (
+        {/* Row 4: 1 2 3 − */}
+        {['1', '2', '3'].map(n => (
           <button
             key={n}
             className={`key key-digit${isPressed(`key-${n}`) ? ' pressed' : ''}`}
@@ -255,24 +272,7 @@ function Calculator() {
           −
         </button>
 
-        {/* Row 4: 1 2 3 + */}
-        {['1', '2', '3'].map(n => (
-          <button
-            key={n}
-            className={`key key-digit${isPressed(`key-${n}`) ? ' pressed' : ''}`}
-            onPointerDown={() => handlePress(n, `key-${n}`)}
-          >
-            {n}
-          </button>
-        ))}
-        <button
-          className={`key key-operator${isPressed('key-+') ? ' pressed' : ''}`}
-          onPointerDown={() => handlePress('+', 'key-+')}
-        >
-          +
-        </button>
-
-        {/* Row 5: 0 (span 2) . = */}
+        {/* Row 5: 0 (span 2) . + */}
         <button
           className={`key key-digit key-zero${isPressed('key-0') ? ' pressed' : ''}`}
           onPointerDown={() => handlePress('0', 'key-0')}
@@ -285,6 +285,14 @@ function Calculator() {
         >
           .
         </button>
+        <button
+          className={`key key-operator${isPressed('key-+') ? ' pressed' : ''}`}
+          onPointerDown={() => handlePress('+', 'key-+')}
+        >
+          +
+        </button>
+
+        {/* Row 6: = (spans full width) */}
         <button
           className={`key key-equals${isPressed('key-=') ? ' pressed' : ''}`}
           onPointerDown={() => handlePress('=', 'key-=')}
