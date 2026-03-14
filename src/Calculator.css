@@ -42,6 +42,7 @@
   position: relative;
   z-index: 1;
   word-break: break-all;
+  transition: font-size 0.15s ease;
 }
 
 /* Dim "ghost" segments like real LED */
@@ -176,6 +177,17 @@
     0 1px 0 0 rgba(160, 155, 140, 0.5),
     0 1px 3px rgba(0, 0, 0, 0.2),
     inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+/* Active operator highlight */
+.key-operator.active {
+  background: linear-gradient(to bottom, #fff5e0, #f0e0c0);
+  color: #d06810;
+  box-shadow:
+    0 3px 0 0 rgba(160, 130, 80, 0.6),
+    0 4px 8px rgba(200, 140, 40, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    0 0 12px rgba(240, 128, 32, 0.25);
 }
 
 /* Equals key - orange, spans full width */
