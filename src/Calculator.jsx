@@ -1,24 +1,46 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
 import './Calculator.css'
 
+function formatWithCommas(str) {
+  if (str === 'Error') return str
+  const num = str.replace('-', '')
+  const parts = num.split('.')
+  const intPart = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+  const formatted = parts.length > 1 ? intPart + '.' + parts[1] : intPart
+  return str.startsWith('-') ? '-' + formatted : formatted
+}
+
+function getDisplayFontSize(text) {
+  const len = text.length
+  if (len <= 10) return null // use CSS default
+  if (len <= 13) return '42px'
+  if (len <= 16) return '34px'
+  return '28px'
+}
+
 function Calculator() {
   const [displayValue, setDisplayValue] = useState('0')
   const [displayError, setDisplayError] = useState(false)
+  const [activeOperator, setActiveOperator] = useState(null)
   const stateRef = useRef({
     currentValue: '0',
     previousValue: null,
     operator: null,
     shouldResetDisplay: false,
+    lastAnswer: null,
   })
   const pressedKeyRef = useRef(null)
   const [, forceRender] = useState(0)
+  const displayTapRef = useRef({ lastTap: 0 })
+  const equalsLongPressRef = useRef(null)
 
   const updateDisplay = useCallback((val) => {
     let str = String(val)
-    if (str.length > 10) {
+    // Allow longer strings now — font will shrink instead of truncating
+    if (str.length > 16) {
       let num = parseFloat(val)
       str = num.toExponential(4)
-      if (str.length > 10) {
+      if (str.length > 16) {
         setDisplayValue('Error')
         setDisplayError(true)
         setTimeout(() => setDisplayError(false), 1000)
@@ -67,6 +89,7 @@ function Calculator() {
     const resultStr = String(result)
     s.currentValue = resultStr
     s.previousValue = result
+    s.lastAnswer = resultStr
     s.shouldResetDisplay = true
     updateDisplay(resultStr)
   }, [flashError, updateDisplay])
@@ -113,6 +136,7 @@ function Calculator() {
       s.previousValue = null
       s.operator = null
       s.shouldResetDisplay = false
+      setActiveOperator(null)
       updateDisplay('0')
       return
     }
@@ -133,13 +157,17 @@ function Calculator() {
       s.previousValue = parseFloat(s.currentValue)
       s.operator = key
       s.shouldResetDisplay = true
+      setActiveOperator(key)
       return
     }
 
     if (key === '=') {
       if (!s.operator) return
+      // Haptic feedback on equals only
+      if (navigator.vibrate) navigator.vibrate(10)
       calculate()
       s.operator = null
+      setActiveOperator(null)
     }
   }, [calculate, updateDisplay])
 
@@ -156,6 +184,41 @@ function Calculator() {
     animateKey(keyId)
     pressKey(key)
   }, [animateKey, pressKey])
+
+  // Last answer recall: double-tap display
+  const handleDisplayDoubleTap = useCallback(() => {
+    const now = Date.now()
+    const last = displayTapRef.current.lastTap
+    displayTapRef.current.lastTap = now
+    if (now - last < 350) {
+      const s = stateRef.current
+      if (s.lastAnswer !== null) {
+        s.currentValue = s.lastAnswer
+        s.shouldResetDisplay = true
+        updateDisplay(s.lastAnswer)
+      }
+    }
+  }, [updateDisplay])
+
+  // Last answer recall: long-press equals
+  const handleEqualsPointerDown = useCallback(() => {
+    equalsLongPressRef.current = setTimeout(() => {
+      const s = stateRef.current
+      if (s.lastAnswer !== null) {
+        s.currentValue = s.lastAnswer
+        s.shouldResetDisplay = true
+        updateDisplay(s.lastAnswer)
+      }
+    }, 500)
+    handlePress('=', 'key-=')
+  }, [handlePress, updateDisplay])
+
+  const handleEqualsPointerUp = useCallback(() => {
+    if (equalsLongPressRef.current) {
+      clearTimeout(equalsLongPressRef.current)
+      equalsLongPressRef.current = null
+    }
+  }, [])
 
   // Keyboard support
   useEffect(() => {
@@ -180,15 +243,22 @@ function Calculator() {
 
   const isPressed = (keyId) => pressedKeyRef.current === keyId
 
+  // Format display value with commas
+  const formattedDisplay = formatWithCommas(displayValue)
+  const fontSize = getDisplayFontSize(formattedDisplay)
+
   return (
     <div className="calculator">
       {/* Display Section */}
       <div className="display-section">
-        <div className="display-window">
+        <div className="display-window" onPointerDown={handleDisplayDoubleTap}>
           <div className="scanline" />
           <div className="display-ghost">8888888888.</div>
-          <div className={`display-text${displayError ? ' error' : ''}`}>
-            {displayValue}
+          <div
+            className={`display-text${displayError ? ' error' : ''}`}
+            style={fontSize ? { fontSize } : undefined}
+          >
+            {formattedDisplay}
           </div>
         </div>
       </div>
@@ -232,7 +302,7 @@ function Calculator() {
           </button>
         ))}
         <button
-          className={`key key-operator${isPressed('key-÷') ? ' pressed' : ''}`}
+          className={`key key-operator${activeOperator === '÷' ? ' active' : ''}${isPressed('key-÷') ? ' pressed' : ''}`}
           onPointerDown={() => handlePress('÷', 'key-÷')}
         >
           ÷
@@ -249,7 +319,7 @@ function Calculator() {
           </button>
         ))}
         <button
-          className={`key key-operator${isPressed('key-×') ? ' pressed' : ''}`}
+          className={`key key-operator${activeOperator === '×' ? ' active' : ''}${isPressed('key-×') ? ' pressed' : ''}`}
           onPointerDown={() => handlePress('×', 'key-×')}
         >
           ×
@@ -266,7 +336,7 @@ function Calculator() {
           </button>
         ))}
         <button
-          className={`key key-operator${isPressed('key-−') ? ' pressed' : ''}`}
+          className={`key key-operator${activeOperator === '−' ? ' active' : ''}${isPressed('key-−') ? ' pressed' : ''}`}
           onPointerDown={() => handlePress('−', 'key-−')}
         >
           −
@@ -286,7 +356,7 @@ function Calculator() {
           .
         </button>
         <button
-          className={`key key-operator${isPressed('key-+') ? ' pressed' : ''}`}
+          className={`key key-operator${activeOperator === '+' ? ' active' : ''}${isPressed('key-+') ? ' pressed' : ''}`}
           onPointerDown={() => handlePress('+', 'key-+')}
         >
           +
@@ -295,7 +365,9 @@ function Calculator() {
         {/* Row 6: = (spans full width) */}
         <button
           className={`key key-equals${isPressed('key-=') ? ' pressed' : ''}`}
-          onPointerDown={() => handlePress('=', 'key-=')}
+          onPointerDown={handleEqualsPointerDown}
+          onPointerUp={handleEqualsPointerUp}
+          onPointerLeave={handleEqualsPointerUp}
         >
           =
         </button>
