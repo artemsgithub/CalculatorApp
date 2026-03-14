@@ -1,0 +1,33 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+}
+
+body {
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #2a2e35;
+  background-image:
+    radial-gradient(ellipse at 30% 20%, #3a3f48 0%, transparent 60%),
+    radial-gradient(ellipse at 70% 80%, #1e2228 0%, transparent 60%);
+  font-family: 'Oswald', sans-serif;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  user-select: none;
+}
+
+#root {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

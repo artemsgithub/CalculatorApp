@@ -1,0 +1,391 @@
+/* Shadow cast on table */
+.scene {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.table-reflection {
+  position: absolute;
+  bottom: -60px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 320px;
+  height: 60px;
+  background: linear-gradient(to bottom, rgba(220, 210, 185, 0.18), transparent);
+  filter: blur(8px);
+  border-radius: 50%;
+}
+
+/* The calculator body */
+.calculator {
+  position: relative;
+  width: 320px;
+  max-width: 95vw;
+  background: linear-gradient(160deg, #ddd5b8 0%, #c8bc9c 40%, #b8ac8c 100%);
+  border-radius: 12px 12px 8px 8px;
+  padding: 0;
+  box-shadow:
+    0 30px 80px rgba(0, 0, 0, 0.7),
+    0 10px 30px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.3);
+}
+
+/* Raised display section at top */
+.display-housing {
+  background: linear-gradient(175deg, #cfc3a0 0%, #b8ac8c 100%);
+  border-radius: 10px 10px 0 0;
+  padding: 14px 18px 10px;
+  border-bottom: 3px solid #8a7d60;
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+  position: relative;
+}
+
+/* Texas Instruments branding row */
+.brand-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.ti-logo {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.ti-star {
+  color: #cc6600;
+  font-size: 18px;
+  line-height: 1;
+  filter: drop-shadow(0 1px 1px rgba(0, 0, 0, 0.3));
+}
+
+.brand-name {
+  font-family: 'Oswald', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a1a1a;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.model-badge {
+  font-family: 'Oswald', sans-serif;
+  font-size: 11px;
+  font-weight: 300;
+  color: #555;
+  letter-spacing: 1px;
+}
+
+/* LED Display */
+.display-window {
+  background: #111008;
+  border-radius: 4px;
+  padding: 8px 12px;
+  border: 2px solid #5a5040;
+  box-shadow:
+    inset 0 2px 8px rgba(0, 0, 0, 0.9),
+    inset 0 0 20px rgba(0, 0, 0, 0.5),
+    0 0 0 1px #3a3020;
+  position: relative;
+  overflow: hidden;
+}
+
+.display-window::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(180deg, rgba(255, 80, 0, 0.03) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+/* Glare on display glass */
+.display-window::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 8px;
+  width: 40%;
+  height: 35%;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.06), transparent);
+  border-radius: 2px;
+  pointer-events: none;
+}
+
+.display-text {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 28px;
+  color: #ff3a00;
+  text-align: right;
+  letter-spacing: 4px;
+  text-shadow:
+    0 0 8px rgba(255, 60, 0, 0.9),
+    0 0 20px rgba(255, 40, 0, 0.6),
+    0 0 40px rgba(255, 20, 0, 0.3);
+  min-height: 38px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 2px;
+  position: relative;
+  z-index: 1;
+}
+
+/* Dim "ghost" segments like real LED */
+.display-ghost {
+  position: absolute;
+  top: 8px;
+  left: 12px;
+  right: 12px;
+  bottom: 8px;
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 28px;
+  color: rgba(255, 40, 0, 0.06);
+  text-align: right;
+  letter-spacing: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 2px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* The black keypad panel */
+.keypad-panel {
+  background: #1a1a1a;
+  background-image: radial-gradient(ellipse at 50% 0%, #2a2a2a, #111 80%);
+  margin: 0;
+  padding: 14px 16px 18px;
+  border-radius: 0 0 6px 6px;
+  position: relative;
+}
+
+/* Small function row at top of keypad */
+.fn-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+/* Main numpad grid */
+.num-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+/* BASE KEY STYLE */
+.key {
+  position: relative;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-family: 'Oswald', sans-serif;
+  font-weight: 400;
+  letter-spacing: 0.5px;
+  user-select: none;
+  transition: transform 0.06s ease, box-shadow 0.06s ease, filter 0.06s ease;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.key:active,
+.key.pressed {
+  transform: translateY(2px) scale(0.97);
+  filter: brightness(0.85);
+}
+
+/* White digit/function keys */
+.key-white {
+  background: linear-gradient(175deg, #f0ece0 0%, #d8d4c4 50%, #c8c4b4 100%);
+  color: #1a1a1a;
+  font-size: 15px;
+  padding: 10px 4px;
+  box-shadow:
+    0 4px 0 #8a8678,
+    0 5px 6px rgba(0, 0, 0, 0.5),
+    inset 0 1px 0 rgba(255, 255, 255, 0.8),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.3);
+}
+
+.key-white:active,
+.key-white.pressed {
+  box-shadow:
+    0 1px 0 #8a8678,
+    0 2px 3px rgba(0, 0, 0, 0.4),
+    inset 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+/* Operator keys in fn row */
+.key-op {
+  font-size: 18px;
+}
+
+/* Minus key */
+.key-minus {
+  font-size: 20px;
+  font-weight: 300;
+}
+
+/* Orange equals key */
+.key-orange {
+  background: linear-gradient(175deg, #f08020 0%, #c86010 50%, #a84e08 100%);
+  color: #fff;
+  font-size: 18px;
+  font-weight: 600;
+  padding: 10px 4px;
+  box-shadow:
+    0 4px 0 #6a3005,
+    0 5px 8px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 180, 80, 0.5);
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.key-orange:active,
+.key-orange.pressed {
+  box-shadow:
+    0 1px 0 #6a3005,
+    0 2px 4px rgba(0, 0, 0, 0.5),
+    inset 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
+/* Equals spans 2 rows */
+.key-equals {
+  grid-row: span 2;
+  font-size: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Zero spans 2 columns */
+.key-zero {
+  grid-column: span 2;
+  font-size: 15px;
+}
+
+/* Small CE / C keys in fn row */
+.key-fn {
+  background: linear-gradient(175deg, #e8e4d4 0%, #ccc8b8 50%, #bcb8a8 100%);
+  color: #222;
+  font-size: 11px;
+  padding: 7px 4px;
+  letter-spacing: 0.3px;
+  box-shadow:
+    0 3px 0 #7a7870,
+    0 4px 5px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.key-fn:active,
+.key-fn.pressed {
+  box-shadow:
+    0 1px 0 #7a7870,
+    0 2px 3px rgba(0, 0, 0, 0.3),
+    inset 0 1px 2px rgba(0, 0, 0, 0.15);
+}
+
+/* Divider line between fn row and numpad */
+.row-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #3a3a3a, transparent);
+  margin: 0 0 10px;
+}
+
+/* Error flash animation */
+@keyframes errorFlash {
+  0%,
+  100% {
+    color: #ff3a00;
+    text-shadow: 0 0 8px rgba(255, 60, 0, 0.9), 0 0 20px rgba(255, 40, 0, 0.6);
+  }
+  50% {
+    color: #ff8800;
+    text-shadow: 0 0 12px rgba(255, 136, 0, 1), 0 0 30px rgba(255, 100, 0, 0.8);
+  }
+}
+
+.display-text.error {
+  animation: errorFlash 0.3s ease 3;
+}
+
+/* Subtle scan line on display */
+@keyframes scanline {
+  0% {
+    top: 0%;
+  }
+  100% {
+    top: 100%;
+  }
+}
+
+.scanline {
+  position: absolute;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: rgba(255, 80, 0, 0.08);
+  animation: scanline 3s linear infinite;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Power LED indicator */
+.power-led {
+  width: 6px;
+  height: 6px;
+  background: #ff2200;
+  border-radius: 50%;
+  box-shadow: 0 0 4px #ff2200, 0 0 8px rgba(255, 34, 0, 0.6);
+  animation: ledPulse 2s ease-in-out infinite;
+}
+
+@keyframes ledPulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+/* Mobile responsive scaling */
+@media (max-height: 600px) {
+  .calculator {
+    transform: scale(0.85);
+    transform-origin: center center;
+  }
+}
+
+@media (min-height: 700px) and (min-width: 380px) {
+  .calculator {
+    width: 340px;
+  }
+  .key-white {
+    padding: 14px 4px;
+  }
+  .key-fn {
+    padding: 10px 4px;
+  }
+  .key-orange {
+    padding: 14px 4px;
+  }
+  .display-text {
+    font-size: 32px;
+    min-height: 44px;
+  }
+  .display-ghost {
+    font-size: 32px;
+  }
+}
